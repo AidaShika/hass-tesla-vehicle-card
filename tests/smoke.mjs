@@ -473,4 +473,35 @@ await check("editor element is registered and fires config-changed with model-li
   assert.equal(evt.detail.config.interior, "black", "interior kept (valid for Model X)");
 });
 
+// ---------- 17. i18n key parity across zh / en / ja ----------
+await check("all languages expose the identical string key set", () => {
+  const src = readFileSync(NEW_FILE, "utf8");
+  const start = src.indexOf("const STRINGS = {");
+  const end = src.indexOf("\n};", start);
+  assert.ok(start >= 0 && end > start, "STRINGS block found");
+  const STRINGS = vm.runInNewContext(`(${src.slice(start + "const STRINGS = ".length, end + 2)})`);
+  const paths = (obj, prefix = "") =>
+    Object.entries(obj)
+      .flatMap(([k, v]) => (v && typeof v === "object" && !Array.isArray(v) ? paths(v, `${prefix}${k}.`) : [`${prefix}${k}`]))
+      .sort();
+  const zh = paths(STRINGS.zh);
+  assert.deepEqual(paths(STRINGS.en), zh, "en keys match zh keys");
+  assert.deepEqual(paths(STRINGS.ja), zh, "ja keys match zh keys");
+});
+
+// ---------- 18. Japanese rendering (auto -> hass language ja) ----------
+await check("japanese labels render when hass language is ja", () => {
+  const { html } = render(NewCard, {}, makeHass("ja-JP"));
+  for (const s of ["ロック中", "空調", "トランク", "セントリー"]) {
+    assert.ok(html.includes(s), `ja render contains ${s}`);
+  }
+});
+
+// ---------- 19. Explicit language "ja" wins over hass language ----------
+await check("explicit language ja wins over zh hass", () => {
+  const { html } = render(NewCard, { language: "ja" }, makeHass("zh-Hans"));
+  assert.ok(html.includes("ロック中"), "ja lock label rendered");
+  assert.ok(!html.includes("已上锁"), "no zh lock label rendered");
+});
+
 console.log(`\nAll ${passed} smoke checks passed.`);

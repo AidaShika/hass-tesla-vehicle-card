@@ -2,7 +2,7 @@
 
 A full-screen style control card for **Tesla vehicles** in Home Assistant — single file, zero dependencies, with the car rendered live by Tesla's official configurator. Works with the Model Y (2025+ refresh and 2020–2025), Model 3 (2017–2024), and the refreshed Model S / Model X (2021+). The card element is `custom:tesla-vehicle-card`; the private builds' `custom:model-y-card` remains registered as a legacy alias, so existing dashboards keep working.
 
-中文说明见 [README.zh-CN.md](README.zh-CN.md).
+中文说明见 [README.zh-CN.md](README.zh-CN.md) ／ 日本語は [README.ja.md](README.ja.md)
 
 [![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=AidaShika&repository=hass-tesla-vehicle-card&category=plugin)
 
@@ -19,7 +19,7 @@ A full-screen style control card for **Tesla vehicles** in Home Assistant — si
 - **Charge panel** — charge state, power, rate, energy added, time remaining, charge-limit and charge-current sliders, start/stop charging and charge-port control.
 - **Quick actions with honest feedback** — lock/unlock, frunk, trunk, windows vent, Sentry, flash lights and honk. Actions whose entity doesn't exist are hidden instead of failing silently; commands report success only once the service call actually succeeds (failures show the reason); destructive actions use a two-tap confirmation (tap once to arm, again to run) instead of a browser popup.
 - **Visual editor** — configure the card in Home Assistant's GUI editor: pick the model, paint, wheels and interior from dropdowns (options follow the selected model), no YAML required.
-- **Two languages** — Chinese and English UI (`language` option, or follow Home Assistant's language automatically).
+- **Three languages** — Chinese, English and Japanese UI (`language` option, or follow Home Assistant's language automatically). Japanese terms follow the official Japanese Tesla app.
 - **Zero dependencies** — one plain JavaScript file, no build step, no other cards required.
 
 ## Screenshots
@@ -87,7 +87,7 @@ name: My Model Y
 | `view` | No | `3qtr` | Default image view: `3qtr` \| `side` \| `rear`. Swipe or tap the car to switch. |
 | `climate` | No | `climate.{vehicle}_climate` | Climate entity ID, if yours differs from the derived one. |
 | `entities` | No | — | Map of per-entity overrides, keyed by the card's internal entity keys (see below). |
-| `language` | No | `auto` | UI language: `zh` \| `en` \| `auto` (follow Home Assistant's language). |
+| `language` | No | `auto` | UI language: `zh` \| `en` \| `ja` \| `auto` (follow Home Assistant's language). |
 | `show_status` | No | `false` | Show the status row (doors & windows / charge port / climate / charge limit). Hidden by default; set to `true` to show it. Independent of `min_height`. |
 | `min_height` | No | — | Stretch the card to a fixed minimum height in px (e.g. `876` for a full-screen phone dashboard). |
 | `trim` | No | per model | Advanced: override the model's compositor trim code (e.g. `MT317` on a legacy Model 3 to get the 2021+ black-trim styling and its Performance wheels). |

@@ -2,7 +2,7 @@
 
 为 **特斯拉车辆** 打造的 Home Assistant 全屏感控制卡片——单文件、零依赖，车图由特斯拉官网配置器实时渲染。支持 Model Y（焕新版与 2020–2025 旧款）、Model 3（2017–2024）、Model S / Model X 改款（2021+）。卡片元素名为 `custom:tesla-vehicle-card`；私有版旧名 `custom:model-y-card` 保留为兼容别名，已有仪表盘无需改动。
 
-English version: [README.md](README.md).
+English version: [README.md](README.md) ／ 日本語版：[README.ja.md](README.ja.md)
 
 [![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=AidaShika&repository=hass-tesla-vehicle-card&category=plugin)
 
@@ -19,7 +19,7 @@ English version: [README.md](README.md).
 - **充电面板**——充电状态、功率、速度、本次充入、充满还需时间，充电上限与充电电流滑块，开始/停止充电与充电口控制。
 - **快捷操作、如实反馈**——锁车/解锁、前备箱、后备箱、车窗通风、哨兵、闪灯、鸣笛。对应实体不存在的按钮直接不显示，不会点了才报错；指令等服务调用真正成功后才报成功，失败弹出原因；危险操作改为两次点击确认（点一次置待确认、再点执行），不再用浏览器原生弹窗。
 - **可视化编辑器**——可在 HA 卡片编辑器里用表单配置：车型、车漆、轮毂、内饰均为下拉选择且随车型联动，不必写 YAML。
-- **中英双语**——`language` 配置项可选中文 / 英文，或自动跟随 Home Assistant 的语言。
+- **中英日三语**——`language` 配置项可选中文 / 英文 / 日文，或自动跟随 Home Assistant 的语言。日文用词对齐特斯拉日版 App。
 - **零依赖**——单个纯 JavaScript 文件，无需构建，不依赖其他卡片。
 
 ## 截图
@@ -87,7 +87,7 @@ name: My Model Y
 | `view` | 否 | `3qtr` | 默认视角：`3qtr` \| `side` \| `rear`；在车图上滑动或点击可切换。 |
 | `climate` | 否 | `climate.{vehicle}_climate` | 空调实体 ID 与推导结果不同时在此指定。 |
 | `entities` | 否 | — | 按内部键名逐项覆盖推导出的实体（见下文）。 |
-| `language` | 否 | `auto` | 界面语言：`zh` \| `en` \| `auto`（跟随 Home Assistant 语言）。 |
+| `language` | 否 | `auto` | 界面语言：`zh` \| `en` \| `ja` \| `auto`（跟随 Home Assistant 语言）。 |
 | `show_status` | 否 | `false` | 是否显示状态排（门窗 / 充电口 / 空调 / 充电上限）。默认不显示，设为 `true` 才显示；与 `min_height` 无关。 |
 | `min_height` | 否 | — | 把卡片撑到固定最小高度（px），如手机全屏仪表盘可用 `876`。 |
 | `trim` | 否 | 随车型 | 高级项：覆盖该车型的配置器 trim 码（如旧款 Model 3 填 `MT317` 可得到 2021+ 黑化饰条造型及其 Performance 轮毂）。 |

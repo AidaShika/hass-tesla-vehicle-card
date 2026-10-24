@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0] - 2026-10-24
+
+- **Japanese UI** — full Japanese (`ja`) string set for the card and the visual
+  editor, selectable via `language: ja`, the editor dropdown, or automatically
+  when Home Assistant's language is Japanese. Terminology follows the official
+  Japanese Tesla app (フロント / トランク / セントリー / チルト / 充電制限 /
+  外気 …), verified against the real app. A full Japanese README
+  (`README.ja.md`) is included.
+  日文界面：新增完整日文（`ja`）字符串（含可视化编辑器），可通过
+  `language: ja`、编辑器下拉或 HA 语言为日文时自动启用；用词对齐特斯拉
+  日版 App 实机（フロント / トランク / セントリー / チルト / 充電制限 /
+  外気 等），并附完整日文 README（`README.ja.md`）。
+
 ## [1.0.0] - 2026-10-24
 
 First public release. / 开源首发版本。

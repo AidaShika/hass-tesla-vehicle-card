@@ -31,7 +31,7 @@
  *                                #   paint / wheels / interior / trim 将被忽略；无预设的车型用这个。
  */
 
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 
 // 车型表：选项码全部来自 2026-10-24 对特斯拉官网配置器的逐组合实测，只收录
 // 已验证（verified）的车漆 / 轮毂 / 内饰；未验证项不列（官网对无效码整串回 412）。
@@ -318,6 +318,100 @@ const STRINGS = {
     opened: "Open",
     closed: "Closed",
   },
+  ja: {
+    stub_name: "マイ Model Y",
+    picker_name: "Tesla Vehicle Card",
+    picker_desc: "テスラ公式コンフィギュレーターの描画を使う、複数モデル対応のテスラ制御カード",
+    err_vehicle: "vehicle（エンティティIDの車両プレフィックス、例：my_model_y）を設定してください",
+    err_model: (v, opts) => `対応していないモデルです：${v}（選択肢：${opts}）`,
+    err_paint: (v, opts) => `対応していないカラーです：${v}（選択肢：${opts}）`,
+    err_interior: (v, opts) => `対応していないインテリアです：${v}（選択肢：${opts}）`,
+    command_sent: "コマンドを実行しました",
+    command_failed: (msg) => `コマンドに失敗しました${msg ? `：${msg}` : ""}`,
+    confirm_q: "もう一度タップで実行",
+    frunk_close_manual: "フロントトランクは手動で閉めてください",
+    waking: "車両を起動しています…",
+    tpms: "タイヤ空気圧",
+    tpms_fl: "左前",
+    tpms_fr: "右前",
+    tpms_rl: "左後",
+    tpms_rr: "右後",
+    at_home: "自宅",
+    away: "外出中",
+    nav_eta: (t) => `約${t}分`,
+    rel_time: (s) => (s < 60 ? "たった今更新" : s < 3600 ? `${Math.floor(s / 60)}分前に更新` : s < 86400 ? `${Math.floor(s / 3600)}時間前に更新` : `${Math.floor(s / 86400)}日前に更新`),
+    doors: { door_fl: "運転席ドア", door_fr: "助手席ドア", door_rl: "左リアドア", door_rr: "右リアドア" },
+    door_alert: (name) => `${name}が開いています`,
+    windows_open: (n) => `窓が${n}か所開いています`,
+    frunk_open: "フロントトランクが開いています",
+    trunk_open: "トランクが開いています",
+    vehicle_unlocked: "ロックされていません",
+    climate_not_found: "空調エンティティが見つかりません：",
+    interior: "車内",
+    climate_running: "空調 作動中",
+    climate_is_off: "空調 オフ",
+    set_temp: "°C 設定温度",
+    climate_turn_on: "空調をオンにする",
+    climate_turn_off: "空調をオフにする",
+    seat_left: "左シートヒーター",
+    seat_right: "右シートヒーター",
+    wheel_heater: "ハンドルヒーター",
+    defrost: "デフロスト",
+    on: "オン",
+    off: "オフ",
+    preset_hint: "車内モード：キープ / ペット / キャンプは、降車後も空調を動かし続けます",
+    heat: { off: "オフ", low: "弱", medium: "中", high: "強" },
+    presets: { off: "オフ", keep: "キープ", dog: "ペット", camp: "キャンプ" },
+    charging: { starting: "充電の準備中", charging: "充電中", stopped: "充電停止中", complete: "充電完了", disconnected: "未接続", no_power: "電源なし" },
+    charge_state: "充電状態",
+    charge_power: "充電電力",
+    charge_rate_label: "充電速度",
+    energy_added: "今回の充電量",
+    time_remaining: "満充電まで",
+    duration_hm: (h, m) => `${h}時間${m}分`,
+    duration_m: (m) => `${m}分`,
+    charge_limit: "充電制限",
+    charge_current: "充電電流",
+    stop_charging: "充電停止",
+    start_charging: "充電開始",
+    not_plugged: "充電ケーブル未接続",
+    close_charge_port: "充電ポートを閉じる",
+    open_charge_port: "充電ポートを開く",
+    online: "オンライン",
+    asleep: "スリープ中",
+    tap_to_wake: "タップで起動",
+    locked: "ロック中",
+    unlocked: "ロック解除",
+    odometer: "走行距離",
+    version: "バージョン：",
+    update_available: "アップデートあり：",
+    car_title: "スワイプまたはタップで視点を切り替え",
+    image_failed: "車両画像を読み込めませんでした：画像パラメーターが未対応か、テスラ公式コンフィギュレーターが変更された可能性があります",
+    exterior: "外気",
+    sentry: "セントリー",
+    sentry_on: "オン",
+    sentry_off: "オフ",
+    btn_locked: "ロック中",
+    btn_unlocked: "ロック解除",
+    btn_lock: "ロック",
+    climate: "空調",
+    climate_on: "空調 オン",
+    charge: "充電",
+    charging_btn: "充電中",
+    trunk: "トランク",
+    collapse: "閉じる",
+    more: "その他",
+    frunk: "フロント",
+    windows: "窓",
+    flash: "フラッシュ",
+    horn: "ホーン",
+    status_openings: "ドア・窓",
+    openings_open: (n) => `${n}か所が開いています`,
+    all_closed: "すべて閉まっています",
+    charge_port: "充電ポート",
+    opened: "開いています",
+    closed: "閉まっています",
+  },
 };
 
 // 浏览器语言：用于拿不到 hass 的两处（卡片选择器文案、getStubConfig 默认名）。
@@ -325,15 +419,22 @@ const STRINGS = {
 function detectLang() {
   const nl = (typeof navigator !== "undefined" && navigator.language) || "";
   if (!nl) return "zh";
-  return nl.toLowerCase().startsWith("zh") ? "zh" : "en";
+  const l = nl.toLowerCase();
+  if (l.startsWith("zh")) return "zh";
+  if (l.startsWith("ja")) return "ja";
+  return "en";
 }
 
 // 语言优先级 / Language priority: config.language > hass language > browser language
 function resolveLang(config, hass) {
   const c = config && config.language;
-  if (c === "zh" || c === "en") return c;
+  if (c === "zh" || c === "en" || c === "ja") return c;
   const hl = ((hass && hass.language) || (hass && hass.locale && hass.locale.language) || "").toLowerCase();
-  if (hl) return hl.startsWith("zh") ? "zh" : "en";
+  if (hl) {
+    if (hl.startsWith("zh")) return "zh";
+    if (hl.startsWith("ja")) return "ja";
+    return "en";
+  }
   return detectLang();
 }
 
@@ -1187,9 +1288,10 @@ class TeslaVehicleCardEditor extends HTMLElement {
   }
 
   _labels() {
-    return detectLang() === "zh"
-      ? { vehicle: "车辆前缀 vehicle（必填）", name: "显示名称", model: "车型", paint: "车漆", wheels: "轮毂", interior: "内饰", view: "默认视角", language: "界面语言", show_status: "显示状态排", min_height: "最小高度 px（可选）", climate: "空调实体 ID（可选）", trim: "Trim 码覆盖（高级，可选）", image_options: "原始 options 串（逃生舱，可选）", auto: "自动（跟随 HA）" }
-      : { vehicle: "Vehicle prefix (required)", name: "Name", model: "Model", paint: "Paint", wheels: "Wheels", interior: "Interior", view: "Default view", language: "UI language", show_status: "Show status row", min_height: "Min height in px (optional)", climate: "Climate entity ID (optional)", trim: "Trim code override (advanced, optional)", image_options: "Raw options string (escape hatch, optional)", auto: "Auto (follow HA)" };
+    const d = detectLang();
+    if (d === "zh") return { vehicle: "车辆前缀 vehicle（必填）", name: "显示名称", model: "车型", paint: "车漆", wheels: "轮毂", interior: "内饰", view: "默认视角", language: "界面语言", show_status: "显示状态排", min_height: "最小高度 px（可选）", climate: "空调实体 ID（可选）", trim: "Trim 码覆盖（高级，可选）", image_options: "原始 options 串（逃生舱，可选）", auto: "自动（跟随 HA）" };
+    if (d === "ja") return { vehicle: "車両プレフィックス vehicle（必須）", name: "表示名", model: "モデル", paint: "カラー", wheels: "ホイール", interior: "インテリア", view: "デフォルト視点", language: "UI言語", show_status: "ステータス行を表示", min_height: "最小の高さ px（任意）", climate: "空調エンティティID（任意）", trim: "Trimコード上書き（高度・任意）", image_options: "生の options 文字列（緊急用・任意）", auto: "自動（HAに合わせる）" };
+    return { vehicle: "Vehicle prefix (required)", name: "Name", model: "Model", paint: "Paint", wheels: "Wheels", interior: "Interior", view: "Default view", language: "UI language", show_status: "Show status row", min_height: "Min height in px (optional)", climate: "Climate entity ID (optional)", trim: "Trim code override (advanced, optional)", image_options: "Raw options string (escape hatch, optional)", auto: "Auto (follow HA)" };
   }
 
   _setField(key, raw) {
@@ -1265,7 +1367,7 @@ class TeslaVehicleCardEditor extends HTMLElement {
         ${fld(L.wheels, sel("wheels", wheelKey, Object.entries(m.wheels).map(([k, code]) => [k, `${k}" · ${code}`])))}
         ${fld(L.interior, sel("interior", interiorKey, Object.entries(m.interiors).map(([k, code]) => [k, `${k} · ${code}`])))}
         ${fld(L.view, sel("view", cfg.view || "3qtr", VIEWS.map((v) => [v.key, en ? v.labelEn : v.label])))}
-        ${fld(L.language, sel("language", cfg.language || "auto", [["auto", L.auto], ["zh", "中文"], ["en", "English"]]))}
+        ${fld(L.language, sel("language", cfg.language || "auto", [["auto", L.auto], ["zh", "中文"], ["en", "English"], ["ja", "日本語"]]))}
         ${fld(L.show_status, sw("show_status", !!cfg.show_status))}
         ${fld(L.min_height, text("min_height", cfg.min_height, "number"))}
         ${fld(L.climate, text("climate", cfg.climate))}
