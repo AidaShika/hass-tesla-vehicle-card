@@ -57,7 +57,7 @@ English version: [README.md](README.md).
 
 ### 手动安装
 
-1. 下载本仓库的 `tesla-vehicle-card.js`。
+1. 从本仓库获取 `tesla-vehicle-card.js`——在仓库中打开该文件下载原始文件，或从 [Releases 页面](https://github.com/AidaShika/hass-tesla-vehicle-card/releases) 的源码压缩包（zip / tar.gz）中解出。
 2. 复制到 Home Assistant 的 `/config/www/tesla-vehicle-card.js`。
 3. 进入 **设置 → 仪表盘 → ⋮ → 资源 → 添加资源**：
    - URL：`/local/tesla-vehicle-card.js`

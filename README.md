@@ -57,7 +57,7 @@ All screenshots, including the main image at the top, are rendered by the card i
 
 ### Manual
 
-1. Download `tesla-vehicle-card.js` from this repository.
+1. Get `tesla-vehicle-card.js` from this repository — open the file in the repo and download the raw file, or extract it from the source archive (zip / tar.gz) on the [releases page](https://github.com/AidaShika/hass-tesla-vehicle-card/releases).
 2. Copy it to `/config/www/tesla-vehicle-card.js` on your Home Assistant instance.
 3. Go to **Settings → Dashboards → ⋮ → Resources → Add resource**:
    - URL: `/local/tesla-vehicle-card.js`
