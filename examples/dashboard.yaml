@@ -1,0 +1,61 @@
+# ============================================================
+# Example 1: Minimal configuration / 最小配置
+# ============================================================
+- type: custom:tesla-vehicle-card
+  vehicle: my_model_y # REQUIRED — the vehicle prefix used in entity IDs
+  name: My Model Y
+
+# ============================================================
+# Example 2: Full configuration (Model Y refresh) / 完整配置
+# ============================================================
+- type: custom:tesla-vehicle-card
+  vehicle: my_model_y
+  name: My Model Y
+  model: modely_juniper # default; modely_legacy | model3_legacy | models_refresh | modelx_refresh
+  paint: stealth_grey # options depend on the model — see README's model table
+  wheels: 19 # 19 | 20 (for modely_juniper)
+  interior: black # black | white (for modely_juniper)
+  view: 3qtr # 3qtr | side | rear (default view; swipe or tap the car to switch)
+  climate: climate.my_model_y_climate # defaults to climate.{vehicle}_climate
+  language: auto # zh | en | auto (default: follow Home Assistant's language)
+  show_status: true # status row: doors & windows / charge port / climate / charge limit
+  min_height: 876 # optional: stretch the card to a fixed height (px), e.g. for a phone dashboard
+  entities: # optional per-entity overrides (keys are the card's internal entity keys)
+    battery: sensor.my_model_y_battery_level
+    lock: lock.my_model_y_lock
+    sentry: switch.my_model_y_sentry_mode
+
+# ============================================================
+# Example 3: Legacy Model Y (2020-2025) / 旧款 Model Y
+# (option codes verified 2026-10-24 / 选项码为 2026-10-24 实测验证)
+# ============================================================
+- type: custom:tesla-vehicle-card
+  vehicle: my_legacy_y
+  name: My Legacy Model Y
+  model: modely_legacy
+  paint: pearl_white # PPSW
+  wheels: 20 # 20" Induction (WY20P)
+  interior: white # INPW0
+
+# ============================================================
+# Example 4: Model S (2021+ refresh) / Model S 改款
+# ============================================================
+- type: custom:tesla-vehicle-card
+  vehicle: my_model_s
+  name: My Model S
+  model: models_refresh
+  paint: solid_black # PBSB
+  wheels: 21 # 21" Arachnid (WS12)
+  interior: cream # IBC00
+
+# ============================================================
+# Example 5: Escape hatch for models without a preset
+# (e.g. Model 3 Highland) — paste the options string from
+# your own Tesla account vehicle image URL.
+# 无预设车型的逃生舱：粘贴自己账户车图 URL 里的 options 串。
+# ============================================================
+- type: custom:tesla-vehicle-card
+  vehicle: my_model_3
+  name: My Model 3
+  model: model3_legacy # provides the compositor model= parameter (m3)
+  image_options: "$MTxxx,$PPSW,$Wxxxx,$IPxxx" # placeholder shape — paste YOUR car's real string
