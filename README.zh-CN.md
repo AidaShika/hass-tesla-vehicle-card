@@ -1,8 +1,10 @@
 # 特斯拉车辆卡片（Tesla Vehicle Card）
 
-为 **特斯拉车辆** 打造的 Home Assistant 全屏感控制卡片——单文件、零依赖，车图由特斯拉官网配置器实时渲染。支持 Model Y（焕新版与 2020–2025 旧款）、Model 3（2017–2024）、Model S / Model X 改款（2021+）。卡片元素名仍为 `custom:tesla-vehicle-card`，已有仪表盘无需改动。
+为 **特斯拉车辆** 打造的 Home Assistant 全屏感控制卡片——单文件、零依赖，车图由特斯拉官网配置器实时渲染。支持 Model Y（焕新版与 2020–2025 旧款）、Model 3（2017–2024）、Model S / Model X 改款（2021+）。卡片元素名为 `custom:tesla-vehicle-card`；私有版旧名 `custom:model-y-card` 保留为兼容别名，已有仪表盘无需改动。
 
 English version: [README.md](README.md).
+
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=AidaShika&repository=hass-tesla-vehicle-card&category=plugin)
 
 ![特斯拉车辆卡片](docs/screenshot-main.jpg)
 

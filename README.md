@@ -1,8 +1,10 @@
 # Tesla Vehicle Card
 
-A full-screen style control card for **Tesla vehicles** in Home Assistant — single file, zero dependencies, with the car rendered live by Tesla's official configurator. Works with the Model Y (2025+ refresh and 2020–2025), Model 3 (2017–2024), and the refreshed Model S / Model X (2021+). The card element is still `custom:tesla-vehicle-card`, so existing dashboards keep working.
+A full-screen style control card for **Tesla vehicles** in Home Assistant — single file, zero dependencies, with the car rendered live by Tesla's official configurator. Works with the Model Y (2025+ refresh and 2020–2025), Model 3 (2017–2024), and the refreshed Model S / Model X (2021+). The card element is `custom:tesla-vehicle-card`; the private builds' `custom:model-y-card` remains registered as a legacy alias, so existing dashboards keep working.
 
 中文说明见 [README.zh-CN.md](README.zh-CN.md).
+
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=AidaShika&repository=hass-tesla-vehicle-card&category=plugin)
 
 ![Tesla Vehicle Card](docs/screenshot-main.jpg)
 
