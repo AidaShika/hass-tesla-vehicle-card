@@ -31,7 +31,7 @@
  *                                #   paint / wheels / interior / trim 将被忽略；无预设的车型用这个。
  */
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 
 // 车型表：选项码全部来自 2026-10-24 对特斯拉官网配置器的逐组合实测，只收录
 // 已验证（verified）的车漆 / 轮毂 / 内饰；未验证项不列（官网对无效码整串回 412）。
@@ -197,6 +197,9 @@ const STRINGS = {
     odometer: "总里程",
     version: "版本：",
     update_available: "可更新",
+    wake_timeout: "车辆唤醒失败，请稍后再试",
+    update_install: "点击安装更新",
+    update_installing: "正在安装更新",
     car_title: "左右滑动或点击切换视角",
     image_failed: "车图加载失败：图片参数可能不受支持，或特斯拉官网接口已变更",
     exterior: "车外",
@@ -291,6 +294,9 @@ const STRINGS = {
     odometer: "Odometer",
     version: "Version: ",
     update_available: "Update available:",
+    wake_timeout: "Vehicle didn't wake up — please try again",
+    update_install: "Install update",
+    update_installing: "Installing update",
     car_title: "Swipe or tap to switch view",
     image_failed: "Car image failed to load: the image parameters may be unsupported, or Tesla's configurator service has changed",
     exterior: "Exterior",
@@ -385,6 +391,9 @@ const STRINGS = {
     odometer: "走行距離",
     version: "バージョン：",
     update_available: "アップデートあり：",
+    wake_timeout: "車両が起動しませんでした。もう一度お試しください",
+    update_install: "アップデートをインストール",
+    update_installing: "アップデートをインストール中",
     car_title: "スワイプまたはタップで視点を切り替え",
     image_failed: "車両画像を読み込めませんでした：画像パラメーターが未対応か、テスラ公式コンフィギュレーターが変更された可能性があります",
     exterior: "外気",
@@ -719,16 +728,78 @@ class TeslaVehicleCard extends HTMLElement {
   // ---------- actions ----------
   // 等待服务调用的结果：成功才报成功，失败弹出简短原因（车睡着、超时等）。
   // Await the service call: only report success once it actually succeeded.
-  async _call(domain, service, entityKey, data = {}) {
+  async _rawCall(domain, service, entityKey, data = {}) {
     const entity_id = this._e[entityKey];
-    if (!entity_id) return;
-    const S = this._str();
+    if (!entity_id) return { ok: false, err: null };
     try {
       await this._hass.callService(domain, service, { entity_id, ...data });
-      this._toast(S.command_sent);
+      return { ok: true };
     } catch (err) {
-      this._toast(S.command_failed(err && err.message ? err.message : ""));
+      return { ok: false, err };
     }
+  }
+
+  async _call(domain, service, entityKey, data = {}) {
+    if (!this._e[entityKey]) return;
+    const S = this._str();
+    const r = await this._rawCall(domain, service, entityKey, data);
+    this._toast(r.ok ? S.command_sent : S.command_failed(r.err && r.err.message ? r.err.message : ""));
+  }
+
+  // 车辆在休眠（有 status 实体且不是 on）/ Vehicle asleep (status entity present and not on)
+  _asleep() {
+    return this._has("online") && !this._on("online");
+  }
+
+  // 唤醒并等待上线。共享同一个等待 Promise，并发的命令不会重复发唤醒。
+  // Wake the vehicle and wait until it reports online. Concurrent commands
+  // share one wait. Poll interval / timeout live on the instance for tests.
+  async _ensureAwake() {
+    if (!this._asleep()) return true;
+    if (!this._has("wake")) return false;
+    if (!this._wakePromise) {
+      this._toast(this._str().waking);
+      const p = (async () => {
+        try {
+          await this._hass.callService("button", "press", { entity_id: this._e.wake });
+        } catch (e) {
+          /* 唤醒指令本身失败也继续等 / a failed wake press still gets its wait window */
+        }
+        const deadline = Date.now() + (this._wakeTimeoutMs ?? 90000);
+        while (Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, this._wakePollMs ?? 2000));
+          if (!this._asleep()) return true;
+        }
+        return false;
+      })();
+      this._wakePromise = p;
+      p.finally(() => {
+        if (this._wakePromise === p) this._wakePromise = null;
+      });
+    }
+    return this._wakePromise;
+  }
+
+  // 带唤醒的命令入口：睡着先唤醒、等上线再执行；执行失败且车又睡过去了，
+  // 唤醒后再重试一次。最终只弹一次结果 toast。
+  // Command entry point with wake-up: wake first when asleep; if the call
+  // fails and the car has fallen asleep again, wake and retry once.
+  async _cmd(domain, service, entityKey, data = {}) {
+    if (!this._e[entityKey]) return;
+    const S = this._str();
+    if (this._asleep()) {
+      const ok = await this._ensureAwake();
+      if (!ok) {
+        this._toast(S.wake_timeout);
+        return;
+      }
+    }
+    let r = await this._rawCall(domain, service, entityKey, data);
+    if (!r.ok && this._asleep()) {
+      const woke = await this._ensureAwake();
+      if (woke) r = await this._rawCall(domain, service, entityKey, data);
+    }
+    this._toast(r.ok ? S.command_sent : S.command_failed(r.err && r.err.message ? r.err.message : ""));
   }
 
   // 两次点击确认（替代 window.confirm）：危险动作首次点击只把该按钮置为
@@ -743,6 +814,7 @@ class TeslaVehicleCard extends HTMLElement {
       case "trunk": return this._v("trunk") !== "open";
       case "windows": return this._v("windows") !== "open";
       case "horn": return true;
+      case "update_install": return true;
       default: return false;
     }
   }
@@ -784,29 +856,29 @@ class TeslaVehicleCard extends HTMLElement {
     } else if (this._armedEl && this._armedEl !== el) this._disarm();
     switch (act) {
       case "lock":
-        this._call("lock", this._v("lock") === "locked" ? "unlock" : "lock", "lock");
+        this._cmd("lock", this._v("lock") === "locked" ? "unlock" : "lock", "lock");
         break;
       case "frunk":
         if (this._v("frunk") === "open") return this._toast(S.frunk_close_manual);
-        this._call("cover", "open_cover", "frunk");
+        this._cmd("cover", "open_cover", "frunk");
         break;
       case "trunk":
-        this._call("cover", this._v("trunk") === "open" ? "close_cover" : "open_cover", "trunk");
+        this._cmd("cover", this._v("trunk") === "open" ? "close_cover" : "open_cover", "trunk");
         break;
       case "port":
-        this._call("cover", this._v("charge_port") === "open" ? "close_cover" : "open_cover", "charge_port");
+        this._cmd("cover", this._v("charge_port") === "open" ? "close_cover" : "open_cover", "charge_port");
         break;
       case "windows":
-        this._call("cover", this._v("windows") === "open" ? "close_cover" : "open_cover", "windows");
+        this._cmd("cover", this._v("windows") === "open" ? "close_cover" : "open_cover", "windows");
         break;
       case "sentry":
-        this._call("switch", this._on("sentry") ? "turn_off" : "turn_on", "sentry");
+        this._cmd("switch", this._on("sentry") ? "turn_off" : "turn_on", "sentry");
         break;
       case "flash":
-        this._call("button", "press", "flash");
+        this._cmd("button", "press", "flash");
         break;
       case "horn":
-        this._call("button", "press", "horn");
+        this._cmd("button", "press", "horn");
         break;
       case "wake":
         this._call("button", "press", "wake");
@@ -814,31 +886,34 @@ class TeslaVehicleCard extends HTMLElement {
         break;
       case "climate_toggle": {
         const on = this._v("climate") !== "off";
-        this._call("climate", on ? "turn_off" : "turn_on", "climate");
+        this._cmd("climate", on ? "turn_off" : "turn_on", "climate");
         break;
       }
       case "temp": {
         const cur = this._s("climate")?.attributes?.temperature ?? 22;
         const a = this._s("climate")?.attributes || {};
         const t = Math.min(a.max_temp ?? 28, Math.max(a.min_temp ?? 15, cur + parseFloat(arg)));
-        this._call("climate", "set_temperature", "climate", { temperature: t });
+        this._cmd("climate", "set_temperature", "climate", { temperature: t });
         break;
       }
       case "preset":
-        this._call("climate", "set_preset_mode", "climate", { preset_mode: arg });
+        this._cmd("climate", "set_preset_mode", "climate", { preset_mode: arg });
         break;
       case "heat": {
         const st = this._s(arg);
         const opts = st?.attributes?.options || ["off", "low", "medium", "high"];
         const next = opts[(opts.indexOf(st?.state) + 1) % opts.length];
-        this._call("select", "select_option", arg, { option: next });
+        this._cmd("select", "select_option", arg, { option: next });
         break;
       }
       case "defrost":
-        this._call("switch", this._on("defrost") ? "turn_off" : "turn_on", "defrost");
+        this._cmd("switch", this._on("defrost") ? "turn_off" : "turn_on", "defrost");
         break;
       case "charge_toggle":
-        this._call("switch", this._on("charge_switch") ? "turn_off" : "turn_on", "charge_switch");
+        this._cmd("switch", this._on("charge_switch") ? "turn_off" : "turn_on", "charge_switch");
+        break;
+      case "update_install":
+        this._cmd("update", "install", "software");
         break;
       case "panel":
         this._panel = this._panel === arg ? null : arg;
@@ -869,7 +944,7 @@ class TeslaVehicleCard extends HTMLElement {
     const el = ev.target;
     if (!el.dataset.num) return;
     this._dragging = false;
-    this._call("number", "set_value", el.dataset.num, { value: Number(el.value) });
+    this._cmd("number", "set_value", el.dataset.num, { value: Number(el.value) });
   }
 
   _toast(msg) {
@@ -1083,7 +1158,7 @@ ${infoRow}
 
         <div class="meta">
           ${odo != null ? `<span>${S.odometer} <b>${Math.round(odo).toLocaleString("en-US")} ${esc(odoUnit)}</b></span>` : ""}
-          ${sw.installed_version ? `<span>${S.version}<b>${esc(sw.installed_version)}</b>${swNew ? `<i class="new">${S.update_available} ${esc(sw.latest_version)}</i>` : ""}</span>` : ""}
+          ${sw.installed_version ? `<span>${S.version}<b>${esc(sw.installed_version)}</b>${swNew ? (sw.in_progress ? `<i class="new">${S.update_installing}${sw.update_percentage != null ? ` ${Math.round(sw.update_percentage)}%` : ""}</i>` : (sw.supported_features & 1) ? `<i class="new act" data-act="update_install" title="${S.update_install}"><span class="lbl">${S.update_available} ${esc(sw.latest_version)}</span></i>` : `<i class="new">${S.update_available} ${esc(sw.latest_version)}</i>`) : ""}</span>` : ""}
           ${freshTxt ? `<span class="fresh">${esc(freshTxt)}</span>` : ""}
         </div>
 ${statusRow ? `
@@ -1163,6 +1238,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 .meta:empty { display: none; }
 .meta b { font-weight: 500; color: var(--primary-text-color); margin-left: 2px; font-variant-numeric: tabular-nums; }
 .meta .new { font-style: normal; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 13px; color: #3e6ae1; background: rgba(62,106,225,.16); }
+.meta .new.act { cursor: pointer; }
 
 /* 官方渲染图为 1440x810，车身大约位于 x 250–1190、y 200–590，用负边距裁掉四周留白 */
 .car { position: relative; margin: 6px 0 0; cursor: pointer; overflow: hidden; touch-action: pan-y; }

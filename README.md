@@ -17,7 +17,7 @@ A full-screen style control card for **Tesla vehicles** in Home Assistant — si
 - **Location & navigation** — while navigating, an info row shows the destination, remaining distance and ETA; otherwise it shows the car's location from its device tracker.
 - **Climate panel** — on/off, target temperature, front seat and steering-wheel heaters, defrost, and Keep / Dog / Camp cabin modes, over the official interior render (exterior render on Model S/X, which have no interior view).
 - **Charge panel** — charge state, power, rate, energy added, time remaining, charge-limit and charge-current sliders, start/stop charging and charge-port control.
-- **Quick actions with honest feedback** — lock/unlock, frunk, trunk, windows vent, Sentry, flash lights and honk. Actions whose entity doesn't exist are hidden instead of failing silently; commands report success only once the service call actually succeeds (failures show the reason); destructive actions use a two-tap confirmation (tap once to arm, again to run) instead of a browser popup.
+- **Quick actions with honest feedback** — lock/unlock, frunk, trunk, windows vent, Sentry, flash lights and honk. Actions whose entity doesn't exist are hidden instead of failing silently; commands report success only once the service call actually succeeds (failures show the reason); destructive actions use a two-tap confirmation (tap once to arm, again to run) instead of a browser popup. If the car is asleep, commands wake it first and wait until it is online (with one retry if it dozes off mid-command). When a software update is available and the update entity supports it, the version badge installs it with the same two-tap confirmation and shows progress while installing.
 - **Visual editor** — configure the card in Home Assistant's GUI editor: pick the model, paint, wheels and interior from dropdowns (options follow the selected model), no YAML required.
 - **Three languages** — Chinese, English and Japanese UI (`language` option, or follow Home Assistant's language automatically). Japanese terms follow the official Japanese Tesla app.
 - **Zero dependencies** — one plain JavaScript file, no build step, no other cards required.
@@ -174,7 +174,7 @@ Entities that don't exist in your setup are skipped where possible: action butto
 
 - Model 3 "Highland" preset — waiting for a verified trim code; until then use `image_options` with your own car's string
 - Cybertruck — the configurator compositor does not support it (verified 2026-10-24); revisit if that changes
-- P2: wake-up + retry before commands, rear seat heaters, one-tap software-update install, partial (non-full) re-rendering
+- P2: rear seat heaters, partial (non-full) re-rendering
 - More polished English copy and additional languages
 
 ## Development

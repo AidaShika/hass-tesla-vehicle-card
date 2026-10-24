@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.0] - 2026-10-24
+
+- **Wake-up + retry** — commands issued while the car is asleep now press the
+  wake button first and wait (up to 90 s) until the car reports online before
+  executing; if a command still fails because the car fell asleep, it is
+  retried once after waking. A wake timeout reports honestly instead of
+  sending the command into the void.
+  唤醒+重试：车在休眠时发出的指令会先按唤醒按钮、等车辆上线（最长 90 秒）
+  再执行；若指令仍因车辆睡过去而失败，唤醒后再自动重试一次；唤醒超时会
+  如实提示，不再把指令发进黑洞。
+- **One-tap software update install** — when an update is available and the
+  update entity supports installing, the "update available" badge becomes
+  tappable: two-tap confirmation, then `update.install`. While installing,
+  the badge shows progress (with percentage when provided).
+  软件更新一键安装：有可用更新且更新实体支持安装时，「可更新」徽章可点击，
+  两击确认后调用 `update.install`；安装中徽章显示进度（实体提供时带百分比）。
+
 ## [1.1.0] - 2026-10-24
 
 - **Japanese UI** — full Japanese (`ja`) string set for the card and the visual

@@ -360,7 +360,10 @@ await check("missing entities hide their action buttons", () => {
 
 // ---------- 12. Two-tap confirmation ----------
 await check("two-tap confirmation: first tap arms only, second tap executes", () => {
-  const hass = makeHass("zh-Hans");
+  const hass = makeHass("zh-Hans", {
+    // car awake, so the wake-up gate in _cmd does not interfere with this test
+    [`binary_sensor.${PREFIX}_status`]: { state: "on", attributes: {}, last_updated: "2026-10-24T00:00:00.000Z" },
+  });
   const calls = [];
   hass.callService = (d, s, data) => {
     calls.push([d, s, data]);
@@ -502,6 +505,119 @@ await check("explicit language ja wins over zh hass", () => {
   const { html } = render(NewCard, { language: "ja" }, makeHass("zh-Hans"));
   assert.ok(html.includes("ロック中"), "ja lock label rendered");
   assert.ok(!html.includes("已上锁"), "no zh lock label rendered");
+});
+
+// ---------- 20. Wake-up gate: asleep car is woken before the command ----------
+await check("commands wake a sleeping car first, then execute once it is online", async () => {
+  const hass = makeHass("zh-Hans");
+  const { card } = render(NewCard, {}, hass);
+  card._wakePollMs = 5;
+  card._wakeTimeoutMs = 2000;
+  const calls = [];
+  hass.callService = (d, s, data) => {
+    calls.push([d, s, data.entity_id]);
+    if (data.entity_id === `button.${PREFIX}_wake`) {
+      setTimeout(() => {
+        hass.states[`binary_sensor.${PREFIX}_status`].state = "on";
+      }, 15);
+    }
+    return Promise.resolve();
+  };
+  await card._cmd("switch", "turn_on", "sentry");
+  assert.equal(calls.length, 2, "wake press + the command itself");
+  assert.deepEqual(calls[0], ["button", "press", `button.${PREFIX}_wake`], "wake is pressed first");
+  assert.deepEqual(calls[1], ["switch", "turn_on", `switch.${PREFIX}_sentry_mode`], "command runs after wake");
+});
+
+// ---------- 21. Wake-up timeout: command is not sent, timeout toast shown ----------
+await check("wake-up timeout aborts the command with a timeout toast", async () => {
+  const hass = makeHass("zh-Hans");
+  const { card } = render(NewCard, {}, hass);
+  card._wakePollMs = 5;
+  card._wakeTimeoutMs = 60;
+  const toastEl = { textContent: "", classList: { add() {}, remove() {} } };
+  card.shadowRoot.getElementById = () => toastEl;
+  const calls = [];
+  hass.callService = (d, s, data) => {
+    calls.push([d, s, data.entity_id]);
+    return Promise.resolve();
+  };
+  await card._cmd("switch", "turn_on", "sentry");
+  assert.equal(calls.length, 1, "only the wake press was attempted");
+  assert.equal(calls[0][2], `button.${PREFIX}_wake`);
+  assert.ok(toastEl.textContent.includes("车辆唤醒失败"), "wake timeout toast shown");
+});
+
+// ---------- 22. Retry once after waking when a command fails on a sleeping car ----------
+await check("a failed command on a car that fell asleep is retried once after waking", async () => {
+  const hass = makeHass("zh-Hans", {
+    [`binary_sensor.${PREFIX}_status`]: { state: "on", attributes: {}, last_updated: "2026-10-24T00:00:00.000Z" },
+  });
+  const { card } = render(NewCard, {}, hass);
+  card._wakePollMs = 5;
+  card._wakeTimeoutMs = 2000;
+  const toastEl = { textContent: "", classList: { add() {}, remove() {} } };
+  card.shadowRoot.getElementById = () => toastEl;
+  const calls = [];
+  let failed = false;
+  hass.callService = (d, s, data) => {
+    calls.push([d, s, data.entity_id]);
+    if (data.entity_id === `switch.${PREFIX}_sentry_mode` && !failed) {
+      failed = true;
+      hass.states[`binary_sensor.${PREFIX}_status`].state = "off"; // car fell asleep mid-command
+      return Promise.reject(new Error("Vehicle is offline"));
+    }
+    if (data.entity_id === `button.${PREFIX}_wake`) {
+      setTimeout(() => {
+        hass.states[`binary_sensor.${PREFIX}_status`].state = "on";
+      }, 15);
+    }
+    return Promise.resolve();
+  };
+  await card._cmd("switch", "turn_on", "sentry");
+  assert.equal(calls.length, 3, "failed attempt + wake press + retry");
+  assert.equal(toastEl.textContent, "指令已执行", "success toast after the retry");
+});
+
+// ---------- 23. Software update: installable badge, two-tap install, progress ----------
+await check("software update badge installs via two-tap when supported, shows progress while installing", async () => {
+  const stOn = (attrs) => ({ state: "on", attributes: attrs, last_updated: "2026-10-24T00:00:00.000Z" });
+  const base = { installed_version: "2026.32.7", latest_version: "2026.38.1" };
+  const ready = render(NewCard, {}, makeHass("zh-Hans", { [`update.${PREFIX}_update`]: stOn({ ...base, supported_features: 1 }) }));
+  assert.ok(ready.html.includes('data-act="update_install"'), "installable badge is clickable");
+  const unsupported = render(NewCard, {}, makeHass("zh-Hans", { [`update.${PREFIX}_update`]: stOn({ ...base, supported_features: 0 }) }));
+  assert.ok(!unsupported.html.includes('data-act="update_install"'), "badge stays passive without install support");
+  const installing = render(NewCard, {}, makeHass("zh-Hans", { [`update.${PREFIX}_update`]: stOn({ ...base, supported_features: 1, in_progress: true, update_percentage: 42 }) }));
+  assert.ok(installing.html.includes("正在安装更新") && installing.html.includes("42%"), "progress shown while installing");
+  assert.ok(!installing.html.includes('data-act="update_install"'), "no install action while installing");
+
+  const hass = makeHass("zh-Hans", {
+    [`binary_sensor.${PREFIX}_status`]: { state: "on", attributes: {}, last_updated: "2026-10-24T00:00:00.000Z" },
+    [`update.${PREFIX}_update`]: stOn({ ...base, supported_features: 1 }),
+  });
+  const calls = [];
+  hass.callService = (d, s, data) => {
+    calls.push([d, s, data.entity_id]);
+    return Promise.resolve();
+  };
+  const { card } = render(NewCard, {}, hass);
+  const lbl = { textContent: "可更新 2026.38.1" };
+  const el = {
+    dataset: { act: "update_install" },
+    classList: {
+      _set: new Set(),
+      add(c) { this._set.add(c); },
+      remove(c) { this._set.delete(c); },
+      contains(c) { return this._set.has(c); },
+    },
+    querySelector: (sel) => (sel === ".lbl" ? lbl : null),
+  };
+  el.closest = () => el;
+  card._onClick({ target: el });
+  assert.equal(calls.length, 0, "first tap only arms the install");
+  card._onClick({ target: el });
+  await new Promise((r) => setTimeout(r, 10));
+  assert.deepEqual(calls, [["update", "install", `update.${PREFIX}_update`]], "second tap calls update.install");
 });
 
 console.log(`\nAll ${passed} smoke checks passed.`);
